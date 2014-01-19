@@ -1,8 +1,9 @@
-#from flask import Flask
-#from flask import Response
-#from flask import url_for
-#from flask import redirect
-#from flask import abort
+from flask import Flask
+from flask import Response
+from flask import url_for
+from flask import redirect
+from flask import abort
+from flask import request
 
 import sys
 import os
@@ -11,14 +12,17 @@ import string
 
 
 
-#app = Flask(__name__)
+app = Flask(__name__)
 
-#@app.route("/test", methods=[ "GET" ])
+@app.route("/test", methods=[ "GET" ])
 def tree():
+    
+    path = request.args.get('p')
+    print path
 
-    file = "" # add stuffs
+    file = parse_path(path)
 
-    return Response(file,mimetype="text/plain")
+    return Response(file,mimetype="text/html")
 
 
 
@@ -27,17 +31,19 @@ def parse_path(path):
     dirs = filter(os.path.isdir, [path + r for r in os.listdir(path)])
     files = filter(os.path.isfile, [path + r for r in os.listdir(path)])
 
-    text = ''
+    text = '<html><body>'
 
     for dir in dirs:
         name = string.replace(dir,path,'')
-        text = text + 'DIR: '+ name + '\n'
+        text = text + '<a href="./test?p='+path+name+'/">'+name+'</a><br/>'
 
     for file in files:        
         name = string.replace(file,path,'')
-        text = text + 'FILE: ' + name + '\n'
+        text = text + name + '<br/>'
+        
+    text = text + '</body></html>'
 
-	return text
+    return text
 
 def in_directory(file, directory):
     
@@ -51,5 +57,5 @@ def in_directory(file, directory):
 
 # ========================================================================
 
-#if __name__ == "__main__":
-#    app.run()
+if __name__ == "__main__":
+    app.run()
