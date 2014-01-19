@@ -8,6 +8,8 @@ from flask import make_response
 
 import database
 
+import random
+
 app = Flask(__name__)
 
 
@@ -17,7 +19,7 @@ def draw_index(d,label):
     txt = '<ul>'
     
     for l in database.get_sub_labels(d,label):
-        txt += '<li><a href="./'+str(l[0])+'">' + str(l[1]) + '</a>'
+        txt += '<li><a href="/index/'+str(l[0])+'">' + str(l[1]) + '</a>'
         txt += draw_index(d,l[0])
         txt += '</li>'
     
@@ -31,16 +33,46 @@ def index(label=1):
     
     db = database.connect('test.db')
     
-    txt = '<html><body><div style="float:right;">'
+    p = database.get_photos_in_label_and_sublabels(db,int(label))
+    rns = [ random.randint(0,len(p)-1) for r in xrange(min(len(p),100))]
+    
+    txt = '''<html>
+                <head>
+                    <style>
+                        .photo { height:400px; }
+                    </style>
+                    <script type="text/javascript" src="http://thomasdaede.com/wordpress/wp-includes/js/jquery/jquery.js?ver=1.10.2"></script>
+                    <script type="text/javascript" src="http://thomasdaede.com/wordpress/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1"></script>
+                    <script>
+                    $j = jQuery.noConflict();
+                        $j(document).ready(function(){
+                            $j("#imgsize").change( function () {
+                                $j(".photo").css("height", $j("#imgsize").val()+"px");
+                            });
+                        });
+                    </script>
+                </head>
+                <body>
+                    <div id="banner" style="z-index:100; background-color:black; width:100%; position:fixed; color:white;">
+                    
+                        Image Height: <input type="text" value="400" id="imgsize" >'''
+                        
+    txt += "(Images " + str(len(rns)) + "/" + str(len(p))+")"
+    txt += '''
+                       </div>
+                    <div style="float:right; padding-top:50px; ">'''
     txt += draw_index(db,label)
     txt += '</div>'
     
-    p = get_photos_in_label_and_sublabels(db,label)
+    ids = []
     
-    ids = [ p[random.randint(0,len(p))] for r in xrange(50)]
+    for r in rns:
+        while p[r] in ids:
+            r = (r + 1) % len(rns)    
+        ids.append(p[r])    
         
     for i in ids:
-        txt += '<img style="height:450px;" src="./img/'+str(i)+'"/>'
+        txt += '<img class="photo" src="/img/'+str(i)+'"/>'
     
     txt+='</body></html>'
     
@@ -63,35 +95,6 @@ def img(id):
     db.db.close()
     
     return Response(resp,mimetype="image/jpeg")
-    
-
-def parse_path(path,maximg):
-
-    dirs = filter(os.path.isdir, [path + r for r in os.listdir(path)])
-    files = filter(os.path.isfile, [path + r for r in os.listdir(path)])
-
-    text = '<html><body>'
-
-    for dir in dirs:
-        name = string.replace(dir,path,'')
-        text = text + '<a href="./test?p='+path+name+'/">'+name+'</a><br/>'
-
-    photocount = 0
-    
-    for file in files:
-        
-        name = string.replace(file,path,'')
-        
-        if name.endswith('.jpg') and photocount < maximg:
-            photocount += 1
-            text += '<img style="height:450px;" src="./img?p='+path+name+'"/>'    
-                
-        else:    
-            text += name + '<br/>'
-                
-    text = text + '</body></html>'
-
-    return text
 
 # ========================================================================
 

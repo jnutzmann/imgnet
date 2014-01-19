@@ -67,7 +67,7 @@ def get_photos_in_label(db,label):
     db.cur.execute('''select photos.id 
                         from label_photo 
                         left outer join photos on label_photo.photo_id=photos.id 
-                        where label_photo.label_id=?''',(label,))
+                        where label_photo.label_id=? and extension=?''',(label,'.jpg'))
     
     paths = []
                       
@@ -84,11 +84,12 @@ def get_photos_in_label_and_sublabels(db,label):
     
 def get_all_children(db,label):
     lbl = [label]
-    for l in get_sub_labels(db,label):
+    for l,n in get_sub_labels(db,label):
         lbl += get_all_children(db,l)
     return lbl
     
 def get_sub_labels(db,label):
+    print label
     db.cur.execute('select id,name from labels where parent_id=?',(label,))
     return db.cur.fetchall()
    
