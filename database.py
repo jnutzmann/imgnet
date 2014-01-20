@@ -42,6 +42,11 @@ def connect(file):
                 
     db.commit()
     return DB(db,cur)
+    
+def get_photos_of_size(db, path):
+    size = os.stat(path).st_size
+    db.cur.execute('select id, path from photos where size=?',(size,))
+    return db.cur.fetchall()
                 
 
 def push_label(db,name,parent):
