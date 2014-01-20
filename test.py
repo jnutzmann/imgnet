@@ -9,6 +9,7 @@ from flask import make_response
 import database
 
 import random
+import json
 
 app = Flask(__name__)
 
@@ -26,6 +27,34 @@ def draw_index(d,label):
     txt += '</ul>'
     
     return txt
+    
+@app.route("/list/photos/allsub/<int:label>")
+def list_photos_allsub(label):
+    db = database.connect('test.db')
+    p = database.get_photos_in_label_and_sublabels(db,int(label))
+    db.db.close()
+    return Response(json.dumps(p),mimetype="application/json")
+
+def build_label_tree(db,label):
+    subs = []
+    
+    for l in database.get_sub_labels(db,label):
+        lbl = {}
+        lbl["n"] = str(l[1])
+        lbl["id"] = l[0]
+        lbl["sub"] = build_label_tree(db, l[0])
+        subs.append(lbl)
+        
+    return subs
+
+@app.route("/tree/labels/<int:label>")
+def tree_labels(label):
+    db = database.connect('test.db')
+    t = build_label_tree(db,label)
+    db.db.close()
+    return json.dumps(t)
+
+
 
 @app.route("/index",strict_slashes=False)
 @app.route("/index/<label>")

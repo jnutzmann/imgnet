@@ -1,0 +1,73 @@
+#banner {
+    z-index:100; 
+    background-color:black;  
+    position:fixed; 
+    color:white;
+    top:10px;
+    right:10px;
+    left:10px;
+    padding-top:12px;
+    padding-left:20px;
+    padding-right:20px;
+    padding-bottom:12px;
+    
+    border-radius:10px;
+}
+
+#prev_button, #next_button {
+    width:150px;
+}
+
+#treebox {
+    z-index:100; 
+    background-color:black;  
+    position:fixed; 
+    color:white;
+    top:80px;
+    right:10px;
+    width:15%;
+    font-size:small;
+    padding:10px;
+    border-radius:10px;
+    text-align:left;
+}
+
+#treebox a {
+    color:white;
+}
+
+#photobox {
+    float:left; 
+    margin-top:60px; 
+    width:82%; 
+    clear:both;
+    margin-left:auto;
+}
+
+body {
+    background-color:#333;
+    text-align:center;
+}
+
+#fullscreen_background {
+    z-index:998;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-color:black;
+    position:fixed;
+}
+
+.fullscreen {
+  z-index: 999;
+  /*min-height: 100%;
+  min-width: 1024px;*/
+  height: 100%;
+  position: fixed;
+  top: 0;
+  text-align:center;
+  left:100px;
+}
+
+
