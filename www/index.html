@@ -17,15 +17,25 @@
             <div style="float:left; width:200px; " id="imgsize_slider"></div>
             <div id="imgsize_disp" style="float:left; margin-left:20px;"></div> 
             
-            <a id="prev_button">previous</a>
-            <a id="next_button">next</a>
+            <input type="button" id="prev_button" value="previous" />
+            <input type="button" id="next_button" value="next" >
             
+             <select id="mode">
+                <option value="0" selected="selected">View</option>
+                <option value="1">Add Labels</option>
+            </select>
+            <select id="activeLabel"></select>
+            <input id="newLabelName">
+            <input id="addLabelButton" type="button" value="add">
             <div id="imgdisp" style="float:right; margin-left:20px;"></div>
             <div style="float:right;">Displayed Images: <input id="imgcount" style="width:50px;" name="value"></div>
         </div>
         
         <div id="photobox"></div>
-        <div id="treebox"></div>
+        <div id="treebox">
+            <a href=".">new</a>
+            <a href=".">edit</a>
+        </div>
         <div id="fullscreen_background"></div>
     </body>
 <html>

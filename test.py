@@ -13,34 +13,23 @@ import json
 
 app = Flask(__name__)
 
+bigd = database.connect('test.db')
 
+# ===============================================================
 
-def draw_index(d,label):
-    
-    txt = '<ul>'
-    
-    for l in database.get_sub_labels(d,label):
-        txt += '<li><a href="/index/'+str(l[0])+'">' + str(l[1]) + '</a>'
-        txt += draw_index(d,l[0])
-        txt += '</li>'
-    
-    txt += '</ul>'
-    
-    return txt
-    
 @app.route("/list/photos/allsub/<int:label>")
 def list_photos_allsub(label):
-    db = database.connect('test.db')
-    p = database.get_photos_in_label_and_sublabels(db,int(label))
-    db.db.close()
+    p = database.get_photos_in_label_and_sublabels(bigd,int(label))
     return Response(json.dumps(p),mimetype="application/json")
+
+# ===============================================================
 
 def build_label_tree(db,label):
     subs = []
     
     for l in database.get_sub_labels(db,label):
         lbl = {}
-        lbl["n"] = str(l[1])
+        lbl["name"] = str(l[1])
         lbl["id"] = l[0]
         lbl["sub"] = build_label_tree(db, l[0])
         subs.append(lbl)
@@ -49,83 +38,48 @@ def build_label_tree(db,label):
 
 @app.route("/tree/labels/<int:label>")
 def tree_labels(label):
-    db = database.connect('test.db')
-    t = build_label_tree(db,label)
-    db.db.close()
-    return json.dumps(t)
+    tree = []
+    lbl = {}
+    lbl["name"] = database.get_label_name(bigd,label)
+    lbl["id"] = label
+    lbl["sub"] = build_label_tree(bigd,label)
+    tree.append(lbl)
+    return json.dumps(tree)
 
+# ===============================================================
 
+@app.route("/applylabel/<int:label>/<int:photo>")
+def apply_label(label,photo):
+    database.add_label(bigd,photo,label);
+    bigd.db.commit()
+    return "";
+    
+# ===============================================================
 
-@app.route("/index",strict_slashes=False)
-@app.route("/index/<label>")
-def index(label=1):
-    
-    db = database.connect('test.db')
-    
-    p = database.get_photos_in_label_and_sublabels(db,int(label))
-    rns = [ random.randint(0,len(p)-1) for r in xrange(min(len(p),100))]
-    
-    txt = '''<html>
-                <head>
-                    <style>
-                        .photo { height:400px; }
-                    </style>
-                    <script type="text/javascript" src="http://thomasdaede.com/wordpress/wp-includes/js/jquery/jquery.js?ver=1.10.2"></script>
-                    <script type="text/javascript" src="http://thomasdaede.com/wordpress/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1"></script>
-                    <script>
-                    $j = jQuery.noConflict();
-                        $j(document).ready(function(){
-                            $j("#imgsize").change( function () {
-                                $j(".photo").css("height", $j("#imgsize").val()+"px");
-                            });
-                        });
-                    </script>
-                </head>
-                <body>
-                    <div id="banner" style="z-index:100; background-color:black; width:100%; position:fixed; color:white;">
-                    
-                        Image Height: <input type="text" value="400" id="imgsize" >'''
-                        
-    txt += "(Images " + str(len(rns)) + "/" + str(len(p))+")"
-    txt += '''
-                       </div>
-                    <div style="float:right; padding-top:50px; ">'''
-    txt += draw_index(db,label)
-    txt += '</div>'
-    
-    ids = []
-    
-    for r in rns:
-        while p[r] in ids:
-            r = (r + 1) % len(rns)    
-        ids.append(p[r])    
-        
-    for i in ids:
-        txt += '<img class="photo" src="/img/'+str(i)+'"/>'
-    
-    txt+='</body></html>'
-    
-    db.db.close()
-    
-    return Response(txt,'text/html')    
-    
+@app.route("/labels/photo/<int:photo>")
+def get_labels_on_photo(photo):
+    return json.dumps(database.get_labels_on_photo(bigd,photo));
+
+# ===============================================================
+
+@app.route("/add/label/<int:parent>/<name>")
+def add_label(parent,name):
+    database.push_label(bigd,name,parent)
+    bigd.db.commit()
+    return ""
+
+# ===============================================================
 
 @app.route("/img/<int:id>", methods=[ "GET" ])
-def img(id):
-   
-    db = database.connect('test.db')
-    
-    path = database.get_image_path(db,id)
-   
+def img(id):    
+    path = database.get_image_path(bigd,id)
     f = open(path)
     resp = f.read()
     f.close()
-    
-    db.db.close()
-    
     return Response(resp,mimetype="image/jpeg")
 
 # ========================================================================
 
 if __name__ == "__main__":
     app.run(debug=True)
+    bigd.db.close()

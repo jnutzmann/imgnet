@@ -25,7 +25,7 @@
     color:white;
     top:80px;
     right:10px;
-    width:15%;
+    width:10%;
     font-size:small;
     padding:10px;
     border-radius:10px;
@@ -34,14 +34,26 @@
 
 #treebox a {
     color:white;
+    text-decoration:underline;
+    cursor:pointer;
 }
 
 #photobox {
     float:left; 
     margin-top:60px; 
-    width:82%; 
+    width:87%; 
     clear:both;
     margin-left:auto;
+}
+
+#photobox img {
+    border-style:solid;
+    border-width:4px;
+    border-color:black;
+}
+
+#photobox img.selected {
+    border-color:red;
 }
 
 body {
@@ -66,8 +78,36 @@ body {
   height: 100%;
   position: fixed;
   top: 0;
-  text-align:center;
-  left:100px;
+  left:0;
+  right:0;
+  margin: 0px auto;
 }
+
+
+ul.tree, ul.tree ul { 
+    list-style-type: none; 
+    background: url(vline.png) repeat-y; 
+    margin: 0; 
+    padding: 0; 
+} 
+
+ul.tree ul { 
+    margin-left: 10px; 
+} 
+
+ul.tree li { 
+    margin: 0; 
+    padding: 0 12px; 
+    line-height: 20px; 
+    background: url(node.png) no-repeat; 
+    color: #369; 
+ } 
+
+ ul.tree li:last-child { 
+    background:black url(lastnode.png) no-repeat; 
+}
+
+
+
 
 

@@ -8,7 +8,7 @@ class DB:
         self.cur = cur
 
 def connect(file):
-    db = sql.connect(file)
+    db = sql.connect(file, check_same_thread=False)
     cur = db.cursor()
     
     cur.execute('pragma foregin_keys = ON')
@@ -35,7 +35,7 @@ def connect(file):
         cur.execute('''create table label_photo (
                 photo_id integer,
                 label_id integer,
-                primary key(photo_id,label_id)
+                primary key(photo_id,label_id) on conflict ignore
                 )''')
         
         cur.execute('pragma user_version = 1')
@@ -66,7 +66,13 @@ def push_photo(db,path):
     db.cur.execute('insert into photos values (null,?,?,?,-1)', (path,ext,size))
     db.cur.execute('select last_insert_rowid()')
     return db.cur.fetchone()[0]
-    
+
+def get_labels_on_photo(db,photo):
+    db.cur.execute('''select labels.id,labels.name 
+                        from  label_photo 
+                        left outer join labels on label_photo.label_id=labels.id
+                        where label_photo.photo_id=?''',(photo,))    
+    return db.cur.fetchall();
     
 def get_photos_in_label(db,label):
     db.cur.execute('''select photos.id 
@@ -93,8 +99,11 @@ def get_all_children(db,label):
         lbl += get_all_children(db,l)
     return lbl
     
+def get_label_name(db,label):
+    db.cur.execute('select name from labels where id=?',(label,))
+    return db.cur.fetchone()[0]
+    
 def get_sub_labels(db,label):
-    print label
     db.cur.execute('select id,name from labels where parent_id=?',(label,))
     return db.cur.fetchall()
    
