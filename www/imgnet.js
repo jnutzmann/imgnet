@@ -17,8 +17,8 @@ var mode = VIEW_MODE;
 
 // ============= AJAX Requests ===============
 
-function list_photos_allsub(label) { $.getJSON( "http://localhost/ajax/list/photos/allsub/"+label, list_photos_allsub_callback )}
-function make_label_tree(label)    { $.getJSON( "http://localhost/ajax/tree/labels/"+label, make_label_tree_callback )}
+function list_photos_allsub(label) { $.getJSON( "/ajax/list/photos/allsub/"+label, list_photos_allsub_callback )}
+function make_label_tree(label)    { $.getJSON( "/ajax/tree/labels/"+label, make_label_tree_callback )}
 
 // ============= Drawing Label Tree ===============
 
@@ -76,7 +76,7 @@ function treeitem_click() {
         
         $("#photobox img.selected").each(function() {
             iid = $(this).attr("iid");
-            $.get("http://localhost/ajax/applylabel/"+lid+"/"+photos[iid]);
+            $.get("/ajax/applylabel/"+lid+"/"+photos[iid]);
             $(this).removeClass("selected");
         });
     }
@@ -132,7 +132,7 @@ function repaint_photoset() {
     
     for (var i = minIndex; i < maxIndex; i++) {
         $("#photobox").append( $("<img>")
-            .attr("src","http://localhost/ajax/img/"+photos[i])
+            .attr("src","/ajax/img/"+photos[i])
             .css("height",get_image_size())
             .attr("iid",i)
         );
@@ -240,7 +240,7 @@ $(document).ready(function() {
     $("#mode").change(mode_onchange).val(mode);
     
     $("#addLabelButton").click(function() {
-        $.get("http://localhost/ajax/add/label/"+$("#activeLabel").val()+"/"+$("#newLabelName").val());
+        $.get("/ajax/add/label/"+$("#activeLabel").val()+"/"+$("#newLabelName").val());
     });
     
 

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     db = database.connect("test.db");
     import dir_import
     
-    dir_import.import_dir(db,'/home/jnutzmann/config',None)
+    dir_import.import_dir(db,'/mnt/TheMediaHUB/Config',None)
     db.db.commit()
     db.db.close()
     
