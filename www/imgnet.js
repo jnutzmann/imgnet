@@ -19,8 +19,25 @@ var mode = VIEW_MODE;
 
 function list_photos_allsub(label) { $.getJSON( "/ajax/list/photos/allsub/"+label, list_photos_allsub_callback )}
 function make_label_tree(label)    { $.getJSON( "/ajax/tree/labels/"+label, make_label_tree_callback )}
+function populate_other_labels(iid) { $.getJSON( "/ajax/labels/photo/"+iid, populate_other_labels_callback )}
 
 // ============= Drawing Label Tree ===============
+
+function populate_other_labels_callback(data) {
+    ul = $("<ul>")
+
+    for ( var i=0; i < data.length; i++) {
+        ul.append( 
+            $("<li>").append(
+                $("<a>").attr("href","?label="+data[i][0])
+                        .html(data[i][1])
+            )
+        );
+        
+    }
+
+    $("#fullscreen_labels").html("").append(ul);
+}
 
 function make_label_tree_callback(data) {
     $("#treebox").html("");
@@ -192,11 +209,13 @@ function next_photo() {
 }
 
 function fullscreen_listener() {
+    iid = parseInt($(this).attr("iid"));
     $(this).css("height","")
            .addClass("fullscreen")
            .unbind("click")
            .click(next_photo);        
     $("#fullscreen_background").show();
+    populate_other_labels(photos[iid]);
 }
 
 function select_listener() {
