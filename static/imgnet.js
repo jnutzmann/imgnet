@@ -15,11 +15,13 @@ var randomize = true;
 
 var mode = VIEW_MODE;
 
+var current_photo;
+
 // ============= AJAX Requests ===============
 
-function list_photos_allsub(label) { $.getJSON( "/ajax/list/photos/allsub/"+label, list_photos_allsub_callback )}
-function make_label_tree(label)    { $.getJSON( "/ajax/tree/labels/"+label, make_label_tree_callback )}
-function populate_other_labels(iid) { $.getJSON( "/ajax/labels/photo/"+iid, populate_other_labels_callback )}
+function list_photos_allsub(label) { $.getJSON( "/list/photos/allsub/"+label, list_photos_allsub_callback )}
+function make_label_tree(label)    { $.getJSON( "/tree/labels/"+label, make_label_tree_callback )}
+function populate_other_labels(iid) { $.getJSON( "/labels/photo/"+iid, populate_other_labels_callback )}
 
 // ============= Drawing Label Tree ===============
 
@@ -45,7 +47,7 @@ function make_label_tree_callback(data) {
     draw_label_dropdown(data,0);
 }
 
-function draw_label_dropdown(data,level)
+function draw_label_dropdown(data, level)
 {
     for ( var i=0; i < data.length; i++ ) {
     
@@ -93,7 +95,7 @@ function treeitem_click() {
         
         $("#photobox img.selected").each(function() {
             iid = $(this).attr("iid");
-            $.get("/ajax/applylabel/"+lid+"/"+photos[iid]);
+            $.get("/applylabel/"+lid+"/"+photos[iid]);
             $(this).removeClass("selected");
         });
     }
@@ -125,7 +127,7 @@ function image_count_onchange() {
 
 function update_bounds(min) {
     minIndex = min;
-    maxIndex = Math.min(min + get_image_count(),photos.length);
+    maxIndex = Math.min(min + get_image_count(), photos.length);
 }
 
 // ============= Forward / Back Buttons ===============
@@ -149,7 +151,7 @@ function repaint_photoset() {
     
     for (var i = minIndex; i < maxIndex; i++) {
         $("#photobox").append( $("<img>")
-            .attr("src","/ajax/img/"+photos[i])
+            .attr("src","/img/"+photos[i])
             .css("height",get_image_size())
             .attr("iid",i)
         );
@@ -194,14 +196,27 @@ function setup_header() {
 function setup_tree() {
     dispLabel = $.urlParam("label");
     
-    if (dispLabel == null) dispLabel = 1;
+    if (dispLabel == null) dispLabel = 0;
     
-    make_label_tree(1);
+    make_label_tree(0);
 }
 
 function next_photo() {
-    iid = parseInt($(this).attr("iid")) + 1;
-    $(this).unbind("click")
+    if (current_photo == null) return;
+
+    iid = parseInt(current_photo.attr("iid")) + 1;
+    current_photo.unbind("click")
+           .click(fullscreen_listener)
+           .removeClass("fullscreen")
+           .css("height",get_image_size());
+    $("img[iid='"+iid+"']").click();
+}
+
+function previous_photo() {
+    if (current_photo == null) return;
+
+    iid = parseInt(current_photo.attr("iid")) - 1;
+    current_photo.unbind("click")
            .click(fullscreen_listener)
            .removeClass("fullscreen")
            .css("height",get_image_size());
@@ -213,7 +228,8 @@ function fullscreen_listener() {
     $(this).css("height","")
            .addClass("fullscreen")
            .unbind("click")
-           .click(next_photo);        
+           .click(next_photo);
+    current_photo = $(this);
     $("#fullscreen_background").show();
     populate_other_labels(photos[iid]);
 }
@@ -239,6 +255,8 @@ function restore_from_fullscreen() {
         .css("height",get_image_size());
         
     $("#fullscreen_background").hide();
+
+    current_photo = null;
 }
 
 function mode_onchange() {
@@ -259,13 +277,20 @@ $(document).ready(function() {
     $("#mode").change(mode_onchange).val(mode);
     
     $("#addLabelButton").click(function() {
-        $.get("/ajax/add/label/"+$("#activeLabel").val()+"/"+$("#newLabelName").val());
+        $.get("/add/label/"+$("#activeLabel").val()+"/"+$("#newLabelName").val());
     });
-    
 
-    $(document).keypress(function(e) {
-        if ( e.which == 0 ) {
+    $(document).keydown(function(e) {
+        if ( e.which == 27 ) {
             restore_from_fullscreen(); 
+        }
+
+        if ( e.which == 39 ) {
+            next_photo();
+        }
+
+        if ( e.which == 37 ) {
+            previous_photo();
         }
     });
     
